@@ -1,5 +1,6 @@
 # Dataset — 5 GB, se descarga con torchvision
 data/food-101/
+data/food-101.tar.gz
 
 # Checkpoints entrenados — cientos de MB
 weights/*.pt
