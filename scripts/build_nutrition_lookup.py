@@ -3,18 +3,21 @@ Script build-time: genera data/nutrition_lookup.json consultando USDA FoodData C
 
 Uso:
     export FDC_API_KEY=xxxx
-    python3 scripts/build_nutrition_lookup.py
+    python3 scripts/build_nutrition_lookup.py          # merge-aware (acumula matches)
+    python3 scripts/build_nutrition_lookup.py --fresh  # empieza de cero
 
 Requiere:
     pip install requests>=2.31
 """
 
+import argparse
 import json
 import logging
 import os
 import sys
 import time
 from pathlib import Path
+from typing import List, Optional
 
 import requests
 
@@ -37,7 +40,7 @@ NUTRIENT_MAP = {
 }
 
 # Queries ajustadas para categorías que no matchean bien con el nombre literal
-CUSTOM_QUERIES: dict[str, str] = {
+CUSTOM_QUERIES: dict = {
     "baby_back_ribs":        "pork ribs barbecue",
     "beef_carpaccio":        "beef carpaccio raw",
     "beef_tartare":          "beef tartare raw",
@@ -101,25 +104,50 @@ CUSTOM_QUERIES: dict[str, str] = {
 }
 
 
-def _search(query: str, api_key: str, session: requests.Session) -> dict | None:
-    """Retorna el primer hit de /foods/search, o None si no hay resultado."""
+def _search(
+    query: str,
+    api_key: str,
+    session: requests.Session,
+    data_types: Optional[List[str]] = None,
+) -> Optional[dict]:
+    """Retorna el primer hit de /foods/search para los dataTypes dados, o None."""
     params = {
         "query":    query,
-        "dataType": DATA_TYPES,
+        "dataType": data_types if data_types is not None else DATA_TYPES,
         "pageSize": 5,
         "api_key":  api_key,
     }
-    for attempt in range(3):
+    for attempt in range(5):
         try:
-            resp = session.get(f"{FDC_BASE}/foods/search", params=params, timeout=10)
+            resp = session.get(f"{FDC_BASE}/foods/search", params=params, timeout=15)
             resp.raise_for_status()
             foods = resp.json().get("foods", [])
             return foods[0] if foods else None
-        except (requests.RequestException, ValueError) as exc:
-            if attempt == 2:
-                logging.warning("  error tras 3 intentos: %s", exc)
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "?"
+            if attempt == 4:
+                logging.warning("  error tras 5 intentos (HTTP %s): %s", status, exc)
                 return None
-            time.sleep(2 ** attempt)
+        except (requests.RequestException, ValueError) as exc:
+            if attempt == 4:
+                logging.warning("  error tras 5 intentos: %s", exc)
+                return None
+        time.sleep(2 ** attempt)  # 1s, 2s, 4s, 8s, 16s
+    return None
+
+
+def _search_with_fallback(
+    query: str, api_key: str, session: requests.Session
+) -> Optional[dict]:
+    """Intenta primero con ambos dataTypes; si falla, prueba cada uno por separado."""
+    food = _search(query, api_key, session, DATA_TYPES)
+    if food is not None:
+        return food
+    for dt in DATA_TYPES:
+        food = _search(query, api_key, session, [dt])
+        if food is not None:
+            logging.info("    match con dataType='%s' individual", dt)
+            return food
     return None
 
 
@@ -133,26 +161,33 @@ def _extract_nutrients(food: dict) -> dict:
     return out
 
 
-def build() -> None:
+def build(fresh: bool = False) -> None:
     api_key = os.environ.get("FDC_API_KEY", "").strip()
     if not api_key:
         sys.exit("Error: exportá FDC_API_KEY antes de correr el script.\n"
                  "  export FDC_API_KEY=xxxx\n"
                  "  Registro gratuito: https://fdc.nal.usda.gov/api-key-signup")
 
+    # Cargar overrides manuales
     overrides_path = ROOT / "data" / "nutrition_overrides.json"
     overrides: dict = {}
     if overrides_path.exists():
         with open(overrides_path, encoding="utf-8") as f:
             raw = json.load(f)
-        # ignorar la clave _comment si existe
         overrides = {k: v for k, v in raw.items() if not k.startswith("_")}
         logging.info("Overrides cargados: %d entradas", len(overrides))
 
-    lookup:    dict[str, dict] = {}
-    unmatched: list[str]       = []
-    log_lines: list[str]       = []
-    from_usda = from_override = 0
+    # Cargar lookup previo como fallback de tercer nivel (merge-aware)
+    existing_lookup: dict = {}
+    if not fresh and NUTRITION_PATH.exists():
+        with open(NUTRITION_PATH, encoding="utf-8") as f:
+            existing_lookup = json.load(f)
+        logging.info("Lookup previo cargado: %d entradas (merge-aware)", len(existing_lookup))
+
+    lookup:    dict = {}
+    unmatched = []
+    log_lines = []
+    from_usda = from_override = from_existing = 0
 
     required_keys = set(NUTRIENT_MAP.values())
     session = requests.Session()
@@ -161,7 +196,7 @@ def build() -> None:
         query = CUSTOM_QUERIES.get(food_class, food_class.replace("_", " "))
         logging.info("[%s]  query='%s'", food_class, query)
 
-        food      = _search(query, api_key, session)
+        food      = _search_with_fallback(query, api_key, session)
         nutrients = _extract_nutrients(food) if food else {}
 
         if food and required_keys.issubset(nutrients):
@@ -169,7 +204,6 @@ def build() -> None:
             data_type = food.get("dataType", "?")
             desc      = food.get("description", "")
             portion   = FOOD101_PORTIONS.get(food_class, 200)
-
             lookup[food_class] = {
                 "calories":  round(nutrients["calories"]),
                 "protein_g": round(nutrients["protein_g"], 1),
@@ -190,12 +224,18 @@ def build() -> None:
             logging.warning("  [%s] nutrientes incompletos en USDA → override", food_class)
             log_lines.append(f"{food_class}: SOURCE=override")
 
+        elif food_class in existing_lookup:
+            lookup[food_class] = existing_lookup[food_class]
+            from_existing += 1
+            logging.info("  [%s] preservado de build previo (USDA no respondió)", food_class)
+            log_lines.append(f"{food_class}: SOURCE=existing")
+
         else:
             unmatched.append(food_class)
             logging.error("  [%s] SIN MATCH en USDA ni en overrides", food_class)
             log_lines.append(f"{food_class}: SOURCE=UNMATCHED")
 
-        time.sleep(0.1)
+        time.sleep(0.25)
 
     # Escribir lookup (orden canónico = FOOD101_CLASSES)
     ordered = {cls: lookup[cls] for cls in FOOD101_CLASSES if cls in lookup}
@@ -212,6 +252,8 @@ def build() -> None:
     print(f"Lookup generado: {len(ordered)}/{total} entradas")
     print(f"  Desde USDA FDC:    {from_usda}")
     print(f"  Desde overrides:   {from_override}")
+    if from_existing:
+        print(f"  Desde build previo:{from_existing}")
     if unmatched:
         print(f"  SIN MATCH ({len(unmatched)}): {', '.join(unmatched)}")
     print(f"Archivo: {NUTRITION_PATH}")
@@ -227,4 +269,11 @@ def build() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    build()
+    parser = argparse.ArgumentParser(description="Genera data/nutrition_lookup.json desde USDA FDC.")
+    parser.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Ignorar lookup existente y empezar de cero (no merge-aware)",
+    )
+    args = parser.parse_args()
+    build(fresh=args.fresh)
