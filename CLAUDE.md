@@ -11,7 +11,8 @@ Integrantes: Fede · Nico · Benja.
 
 - Python 3.10+, PyTorch + torchvision
 - **GPU local — no Colab**. Mac Apple Silicon usa MPS; verificar con `torch.backends.mps.is_available()`. CUDA solo para NVIDIA.
-- EfficientNet-B0 como backbone principal (5.3M parámetros, ~2-3 h de entrenamiento).
+- EfficientNet-B0 como backbone principal (5.3M parámetros).
+- **Tiempos reales en MPS (Apple Silicon M5):** baseline head-only ~30 min (5 épocas), fine-tuning ~3-4 h (25 épocas).
 
 ## Setup rápido
 
@@ -24,18 +25,20 @@ python3 -c "import torch; print(torch.backends.mps.is_available())"  # debe ser 
 
 ### Regenerar el lookup nutricional (opcional)
 
-`data/nutrition_lookup.json` se genera una sola vez desde USDA FoodData Central.
+`data/nutrition_lookup.json` se genera desde USDA FoodData Central.
 Para regenerarlo (ej. si cambian las clases o querés auditar los valores):
 
 ```bash
 # API key gratuita: https://fdc.nal.usda.gov/api-key-signup
 export FDC_API_KEY=tu_key_aqui
-python3 scripts/build_nutrition_lookup.py
+
+python3 scripts/build_nutrition_lookup.py --fresh   # arranca de cero
+python3 scripts/build_nutrition_lookup.py           # re-run merge-aware (acumula, nunca regresa)
 ```
 
-El script tarda ~30-60 s (101 requests secuenciales). Los platos sin match en USDA
-toman sus valores de `data/nutrition_overrides.json` (curados manualmente).
-Ver `build_log.txt` (no commiteado) para auditar qué `fdcId` matcheó cada categoría.
+El script tarda ~60-90 s. La API de USDA tira 400s transitorios en algunas categorías — el script los maneja automáticamente (reintentos con backoff + split de dataType). Si quedan SIN MATCH, simplemente volvé a correr sin `--fresh`: el modo merge-aware preserva los matches previos y solo intenta las que fallaron.
+
+`data/nutrition_overrides.json` contiene fallbacks manuales para las categorías que USDA genuinamente no cubre (actualmente solo `omelette`). Ver `build_log.txt` (no commiteado) para auditar qué `fdcId` matcheó cada categoría.
 
 ## Estructura del código
 
@@ -116,6 +119,8 @@ result = pipe.analyze("foto.jpg")
 - No asumir Colab — el entorno es local con GPU
 - No implementar la API FastAPI en el TP (solo el esqueleto en `api/main.py`)
 - No entrenar en CPU (no es viable para Food-101)
+- No usar `python` — en este entorno solo funciona `python3`
+- No correr `build_nutrition_lookup.py` sin `--fresh` la primera vez si querés un lookup limpio desde la API
 
 ## Referencia completa
 

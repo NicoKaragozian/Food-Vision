@@ -12,7 +12,7 @@ TP Final · MIA304 Visión y Percepción Computarizada · UdeSA 2026
 cd "TP Final"
 
 # 2. Crear entorno virtual
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate        # macOS / Linux
 # .venv\Scripts\activate         # Windows
 
@@ -20,11 +20,30 @@ source .venv/bin/activate        # macOS / Linux
 pip install -r requirements.txt
 
 # 4. Verificar GPU
-python -c "import torch; print('CUDA:', torch.cuda.is_available())"
-# → CUDA: True
+python3 -c "import torch; print('MPS:', torch.backends.mps.is_available())"   # Mac Apple Silicon
+python3 -c "import torch; print('CUDA:', torch.cuda.is_available())"          # NVIDIA
 ```
 
-> El entrenamiento requiere GPU con CUDA. EfficientNet-B0 sobre Food-101 tarda ~2-3 horas en una GPU moderna.
+> El entrenamiento requiere GPU. En Mac Apple Silicon (MPS) el baseline tarda ~30 min y el fine-tuning ~3-4 horas.
+
+---
+
+## Lookup nutricional
+
+`data/nutrition_lookup.json` se genera desde USDA FoodData Central. La API es gratuita:
+
+```bash
+# Registro en: https://fdc.nal.usda.gov/api-key-signup
+export FDC_API_KEY=tu_key_aqui
+
+# Primera corrida (desde cero)
+python3 scripts/build_nutrition_lookup.py --fresh
+
+# Si quedaron categorías sin match, re-correr (merge-aware, nunca regresa)
+python3 scripts/build_nutrition_lookup.py
+```
+
+El script tarda ~60-90 s. Si la API de USDA falla con errores 400 transitorios en algunas categorías, simplemente volvé a correr sin `--fresh` — acumula los matches sin pisar los anteriores. El archivo `data/nutrition_overrides.json` contiene los fallbacks manuales para categorías que USDA no cubre.
 
 ---
 
@@ -62,9 +81,10 @@ print(result["nutrition"]["estimated_portion"])
 ```
 src/           Módulos reutilizables (modelo, nutrición, pipeline, trainer, utils)
 notebooks/     Evidencia académica (EDA → entrenamiento → embeddings → evaluación)
-data/          nutrition_lookup.json + food-101/ (generado al correr 01_EDA)
+data/          nutrition_lookup.json + nutrition_overrides.json + food-101/ (generado al correr 01_EDA)
 weights/       Checkpoints entrenados (no se suben a git)
 api/           Esqueleto FastAPI (referencia futura, no parte del TP)
+scripts/       build_nutrition_lookup.py + food101_portions.py
 ```
 
 ---
