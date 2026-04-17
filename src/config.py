@@ -47,7 +47,12 @@ INPUT_SIZE = 224
 # ── Entrenamiento ──────────────────────────────────────────────────────────────
 BATCH_SIZE = 64
 SEED = 42
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    DEVICE = torch.device("mps")
+else:
+    DEVICE = torch.device("cpu")
 
 # Fase 1 — head only
 BASELINE_LR     = 1e-3
