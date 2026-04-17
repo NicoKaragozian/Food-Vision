@@ -3,7 +3,7 @@ Módulo de modelo: construcción, carga, predicción y extracción de embeddings
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -114,7 +114,7 @@ def get_param_groups(
 
 
 def load_model(
-    weights_path: str | Path,
+    weights_path: Union[str, Path],
     backbone: str = DEFAULT_BACKBONE,
     num_classes: int = NUM_CLASSES,
     device: Optional[torch.device] = None,

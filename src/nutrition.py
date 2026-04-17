@@ -6,7 +6,7 @@ Completamente desacoplado del modelo de visión.
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from .config import NUTRITION_PATH
 
@@ -20,7 +20,7 @@ def _load_db(path: str) -> dict:
 
 def get_nutrition(
     food_class: str,
-    path: str | Path = NUTRITION_PATH,
+    path: Union[str, Path] = NUTRITION_PATH,
 ) -> Optional[dict]:
     """
     Devuelve datos nutricionales por 100g para una categoría de Food-101.
@@ -35,7 +35,7 @@ def get_nutrition(
 def estimate_total_calories(
     food_class: str,
     portion_g: Optional[float] = None,
-    path: str | Path = NUTRITION_PATH,
+    path: Union[str, Path] = NUTRITION_PATH,
 ) -> Optional[dict]:
     """
     Calcula la nutrición total para una porción (típica o custom).
