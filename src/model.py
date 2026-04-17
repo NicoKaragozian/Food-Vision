@@ -132,7 +132,7 @@ def load_model(
 
 def predict(
     model: nn.Module,
-    image: "Image.Image | np.ndarray",
+    image: Union["Image.Image", np.ndarray],
     class_names: list[str],
     device: Optional[torch.device] = None,
     top_k: int = 3,

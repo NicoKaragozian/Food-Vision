@@ -9,7 +9,7 @@ Uso:
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -28,7 +28,7 @@ class FoodVisionPipeline:
 
     def __init__(
         self,
-        weights_path: Optional[str | Path] = None,
+        weights_path: Optional[Union[str, Path]] = None,
         backbone: str = DEFAULT_BACKBONE,
         device: Optional[torch.device] = None,
     ):
@@ -62,7 +62,7 @@ class FoodVisionPipeline:
 
     def analyze(
         self,
-        image: "str | Path | Image.Image | np.ndarray",
+        image: Union[str, Path, "Image.Image", np.ndarray],
         top_k: int = 3,
         portion_g: Optional[float] = None,
     ) -> dict:

@@ -3,7 +3,7 @@ Loop de entrenamiento reutilizable para notebooks 02 (baseline) y 03 (fine-tunin
 """
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 import torch.nn as nn
@@ -84,7 +84,7 @@ def train_model(
     optimizer: torch.optim.Optimizer,
     criterion: nn.Module,
     device: torch.device,
-    save_path: Optional[str | Path] = None,
+    save_path: Optional[Union[str, Path]] = None,
     scheduler=None,
     patience: int = 5,
 ) -> dict:
