@@ -10,17 +10,32 @@ Integrantes: Fede · Nico · Benja.
 ## Entorno
 
 - Python 3.10+, PyTorch + torchvision
-- **GPU local con CUDA — no Colab**. Antes de entrenar verificar `torch.cuda.is_available()`.
+- **GPU local — no Colab**. Mac Apple Silicon usa MPS; verificar con `torch.backends.mps.is_available()`. CUDA solo para NVIDIA.
 - EfficientNet-B0 como backbone principal (5.3M parámetros, ~2-3 h de entrenamiento).
 
 ## Setup rápido
 
 ```bash
 cd "TP Final"
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -c "import torch; print(torch.cuda.is_available())"  # debe ser True
+python3 -c "import torch; print(torch.backends.mps.is_available())"  # debe ser True en Mac Apple Silicon
 ```
+
+### Regenerar el lookup nutricional (opcional)
+
+`data/nutrition_lookup.json` se genera una sola vez desde USDA FoodData Central.
+Para regenerarlo (ej. si cambian las clases o querés auditar los valores):
+
+```bash
+# API key gratuita: https://fdc.nal.usda.gov/api-key-signup
+export FDC_API_KEY=tu_key_aqui
+python3 scripts/build_nutrition_lookup.py
+```
+
+El script tarda ~30-60 s (101 requests secuenciales). Los platos sin match en USDA
+toman sus valores de `data/nutrition_overrides.json` (curados manualmente).
+Ver `build_log.txt` (no commiteado) para auditar qué `fdcId` matcheó cada categoría.
 
 ## Estructura del código
 
