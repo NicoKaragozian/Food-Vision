@@ -157,7 +157,7 @@ def predict(
     top_probs, top_indices = torch.topk(probs, k=top_k)
 
     return [
-        {"class": class_names[idx], "confidence": prob.item()}
+        {"class": class_names[idx], "confidence": prob}
         for idx, prob in zip(top_indices.tolist(), top_probs.tolist())
     ]
 
