@@ -40,3 +40,9 @@ wandb/
 *.egg-info/
 dist/
 build/
+
+# Presentaciones (archivos pesados de trabajo)
+Presentaciones/
+
+# Lock files de Microsoft Office
+~$*

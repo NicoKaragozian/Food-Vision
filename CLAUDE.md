@@ -5,7 +5,7 @@
 TP Final de la materia *Visión y Percepción Computarizada* (MIA304). El objetivo es:
 > Dada una foto de un plato de comida, identificar la categoría (Food-101) y estimar calorías + macronutrientes (proteínas, carbs, grasas) a partir de un lookup nutricional estático.
 
-Integrantes: Fede · Nico · Benja.
+Integrantes: Nico · Benja.
 
 ## Entorno
 
