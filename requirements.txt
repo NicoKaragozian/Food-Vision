@@ -32,3 +32,6 @@ python-multipart>=0.0.9
 
 # Arquitecturas adicionales (opcional)
 # timm>=0.9.0
+
+# Detección (Paso 2 del ROADMAP — YOLOv8 + EfficientNet en cascada)
+ultralytics>=8.0.0
