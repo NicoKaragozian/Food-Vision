@@ -12,6 +12,7 @@ numpy>=1.26.0
 matplotlib>=3.8.0
 seaborn>=0.13.0
 scikit-learn>=1.4.0
+scipy>=1.11.0
 
 # Notebooks
 jupyterlab>=4.0.0
@@ -35,3 +36,6 @@ python-multipart>=0.0.9
 
 # Detección (Paso 2 del ROADMAP — YOLOv8 + EfficientNet en cascada)
 ultralytics>=8.0.0
+
+# Evaluación de detección/segmentación — FoodSeg103 vía HuggingFace (notebooks 07+)
+datasets>=2.16.0

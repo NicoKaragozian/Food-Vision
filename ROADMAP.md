@@ -127,6 +127,15 @@ El resultado: cada región del plato tiene su propia predicción de clase y conf
 
 Todo el marco conceptual (IoU para definir TP/FP, curva PR, mAP) viene directamente de la Clase 6 y Práctica 6. La diferencia es que ahora lo aplicamos a detección de comida real en lugar del dataset COCO genérico.
 
+### Estado de implementación
+
+Implementado en dos notebooks:
+
+- **`06_detection_pipeline.ipynb`** — cascada *básica*. Su evaluación expuso tres bugs de agregación: suma kcal de la vajilla como si fuera comida, cuenta el mismo plato varias veces (cajas solapadas) y asigna una porción fija de 250 g *por caja*. Resultado: el MAPE calórico salta de 10.3% a 196.3%. Es un resultado negativo honesto y la motivación del notebook siguiente.
+- **`07_detection_eval.ipynb`** — cascada *corregida* (v2): separa las clases COCO de comida vs referencia de escala (la vajilla no aporta kcal), aplica NMS entre cajas de comida y reparte un presupuesto único de 250 g por plato proporcional al área. Además agrega el `mAP@50` real que el nb06 no podía calcular.
+
+**Dataset de evaluación elegido: FoodSeg103** (`EduardoPacheco/FoodSeg103`, HuggingFace). Food-101 no tiene bounding boxes y es de un plato por foto, así que no sirve ni para medir `mAP@50` ni para validar la suma multi-ingrediente. FoodSeg103 tiene 7.120 imágenes de platos reales con varios ingredientes y máscaras pixel-wise; derivando boxes de esas máscaras se mide `mAP@50` de verdad. Se elige también porque es el benchmark que el Paso 3 usa para segmentación — el mismo dataset sirve para los dos pasos.
+
 ---
 
 ## Paso 3 — Segmentación con SAM
@@ -160,7 +169,9 @@ IngredSAM (2024) va un paso más allá con one-shot segmentation: usando una ima
 
 ### Dataset de evaluación: FoodSeg103
 
-FoodSeg103 (Wu et al., 2021) es el benchmark estándar para segmentación de comida: 9,490 imágenes, 103 categorías, con máscaras pixel-wise verificadas. Si se implementa segmentación, conviene evaluar sobre este dataset además de Food-101 para poder comparar con la literatura.
+FoodSeg103 (Wu et al., 2021) es el benchmark estándar para segmentación de comida: 103 categorías con máscaras pixel-wise verificadas. Si se implementa segmentación, conviene evaluar sobre este dataset además de Food-101 para poder comparar con la literatura.
+
+> Ya está integrado: el notebook 07 lo descarga vía `datasets.load_dataset("EduardoPacheco/FoodSeg103")` (split de validación: ~2.140 imágenes) y deriva bounding boxes de sus máscaras. El notebook 08 (SAM) puede reusar el mismo objeto `foodseg` y comparar las máscaras de SAM contra las máscaras ground-truth del dataset.
 
 ### Métricas a reportar para este paso
 
