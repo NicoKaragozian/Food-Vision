@@ -7,11 +7,12 @@ from pathlib import Path
 import torch
 
 # ── Rutas ──────────────────────────────────────────────────────────────────────
-ROOT_DIR       = Path(__file__).parent.parent
-DATA_DIR       = ROOT_DIR / "data"
-WEIGHTS_DIR    = ROOT_DIR / "weights"
-FOOD101_DIR    = DATA_DIR / "food-101"
-NUTRITION_PATH = DATA_DIR / "nutrition_lookup.json"
+ROOT_DIR                  = Path(__file__).parent.parent
+DATA_DIR                  = ROOT_DIR / "data"
+WEIGHTS_DIR               = ROOT_DIR / "weights"
+FOOD101_DIR               = DATA_DIR / "food-101"
+NUTRITION_PATH            = DATA_DIR / "nutrition_lookup.json"
+FOODSEG103_NUTRITION_PATH = DATA_DIR / "nutrition_foodseg103.json"
 
 # ── Dataset ────────────────────────────────────────────────────────────────────
 NUM_CLASSES = 101
@@ -39,6 +40,38 @@ FOOD101_CLASSES = [
     "spaghetti_bolognese", "spaghetti_carbonara", "spring_rolls", "steak", "strawberry_shortcake",
     "sushi", "tacos", "takoyaki", "tiramisu", "tuna_tartare", "waffles",
 ]
+
+# ── Dataset: FoodSeg103 ────────────────────────────────────────────────────────
+# 103 ingredientes individuales en orden de id (id 1 = "candy", id 103 = "other
+# ingredientes"; id 0 = background, omitido). Fuente: HuggingFace dataset
+# EduardoPacheco/FoodSeg103, archivo id2label.json.
+# Algunos nombres traen artefactos del dataset original (espacios iniciales,
+# pares de palabras como "chicken duck") y se preservan tal cual para mantener
+# la correspondencia con los ids de las máscaras.
+FOODSEG103_CLASSES = [
+    "candy", "egg tart", "french fries", "chocolate", "biscuit",
+    "popcorn", "pudding", "ice cream", "cheese butter", "cake",
+    "wine", "milkshake", "coffee", "juice", "milk",
+    "tea", "almond", "red beans", "cashew", "dried cranberries",
+    "soy", "walnut", "peanut", "egg", "apple",
+    "date", "apricot", "avocado", "banana", "strawberry",
+    "cherry", "blueberry", "raspberry", "mango", "olives",
+    "peach", "lemon", "pear", "fig", "pineapple",
+    "grape", "kiwi", "melon", "orange", "watermelon",
+    "steak", "pork", "chicken duck", "sausage", "fried meat",
+    "lamb", "sauce", "crab", "fish", "shellfish",
+    "shrimp", "soup", "bread", "corn", "hamburg",
+    "pizza", " hanamaki baozi", "wonton dumplings", "pasta", "noodles",
+    "rice", "pie", "tofu", "eggplant", "potato",
+    "garlic", "cauliflower", "tomato", "kelp", "seaweed",
+    "spring onion", "rape", "ginger", "okra", "lettuce",
+    "pumpkin", "cucumber", "white radish", "carrot", "asparagus",
+    "bamboo shoots", "broccoli", "celery stick", "cilantro mint", "snow peas",
+    " cabbage", "bean sprouts", "onion", "pepper", "green beans",
+    "French beans", "king oyster mushroom", "shiitake", "enoki mushroom", "oyster mushroom",
+    "white button mushroom", "salad", "other ingredients",
+]
+assert len(FOODSEG103_CLASSES) == 103, f"Esperaba 103 clases, hay {len(FOODSEG103_CLASSES)}"
 
 # ── Modelo ─────────────────────────────────────────────────────────────────────
 DEFAULT_BACKBONE = "efficientnet_b0"

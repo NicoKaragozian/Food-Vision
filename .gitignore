@@ -4,6 +4,7 @@ data/food-101.tar.gz
 
 # Checkpoints entrenados — cientos de MB
 weights/*.pt
+weights/*.pth
 
 # Python
 __pycache__/
@@ -36,6 +37,8 @@ wandb/
 
 # Logs y temporales
 *.log
+build_log.txt
+build_log_foodseg103.txt
 .pytest_cache/
 *.egg-info/
 dist/

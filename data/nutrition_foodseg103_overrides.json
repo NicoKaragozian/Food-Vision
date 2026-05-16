@@ -1,0 +1,117 @@
+{
+  "_doc": "Fallbacks manuales para los ingredientes de FoodSeg103 que USDA no resuelve bien (compuestos, asiáticos específicos, genéricos). El script build_nutrition_foodseg103.py los usa cuando la query a USDA no devuelve los 5 macros requeridos. Todos los valores son por 100 g comestible.",
+  "_fuente": "USDA FoodData Central + recetarios genéricos. portion_g uniforme = 100 g (los valores son por 100 g, así que el lookup es directamente comparable).",
+
+  "other ingredients": {
+    "calories": 150,
+    "protein_g": 5.0,
+    "carbs_g":   20.0,
+    "fat_g":     5.0,
+    "fiber_g":   2.0,
+    "portion_g": 100
+  },
+  "salad": {
+    "calories": 30,
+    "protein_g": 1.5,
+    "carbs_g":   5.0,
+    "fat_g":     0.3,
+    "fiber_g":   2.0,
+    "portion_g": 100
+  },
+  "soup": {
+    "calories": 45,
+    "protein_g": 2.0,
+    "carbs_g":   7.0,
+    "fat_g":     1.0,
+    "fiber_g":   1.0,
+    "portion_g": 100
+  },
+  "sauce": {
+    "calories": 60,
+    "protein_g": 6.0,
+    "carbs_g":   5.0,
+    "fat_g":     1.0,
+    "fiber_g":   0.5,
+    "portion_g": 100
+  },
+  " hanamaki baozi": {
+    "calories": 230,
+    "protein_g": 8.0,
+    "carbs_g":   40.0,
+    "fat_g":     4.0,
+    "fiber_g":   2.0,
+    "portion_g": 100
+  },
+  "cheese butter": {
+    "calories": 350,
+    "protein_g": 8.0,
+    "carbs_g":   2.5,
+    "fat_g":     34.0,
+    "fiber_g":   0.0,
+    "portion_g": 100
+  },
+  "chicken duck": {
+    "calories": 200,
+    "protein_g": 25.0,
+    "carbs_g":   0.0,
+    "fat_g":     11.0,
+    "fiber_g":   0.0,
+    "portion_g": 100
+  },
+  "fried meat": {
+    "calories": 290,
+    "protein_g": 22.0,
+    "carbs_g":   3.0,
+    "fat_g":     20.0,
+    "fiber_g":   0.2,
+    "portion_g": 100
+  },
+  "wonton dumplings": {
+    "calories": 220,
+    "protein_g": 9.0,
+    "carbs_g":   28.0,
+    "fat_g":     8.0,
+    "fiber_g":   1.5,
+    "portion_g": 100
+  },
+  "hamburg": {
+    "calories": 295,
+    "protein_g": 17.0,
+    "carbs_g":   24.0,
+    "fat_g":     14.0,
+    "fiber_g":   1.5,
+    "portion_g": 100
+  },
+  "rape": {
+    "calories": 22,
+    "protein_g": 2.9,
+    "carbs_g":   2.9,
+    "fat_g":     0.3,
+    "fiber_g":   2.7,
+    "portion_g": 100
+  },
+  "steak": {
+    "calories": 270,
+    "protein_g": 25.0,
+    "carbs_g":   0.0,
+    "fat_g":     19.0,
+    "fiber_g":   0.0,
+    "portion_g": 100
+  },
+  "shellfish": {
+    "calories": 120,
+    "protein_g": 20.0,
+    "carbs_g":   5.0,
+    "fat_g":     2.0,
+    "fiber_g":   0.0,
+    "portion_g": 100
+  },
+  "shrimp": {
+    "calories": 99,
+    "protein_g": 24.0,
+    "carbs_g":   0.0,
+    "fat_g":     0.3,
+    "fiber_g":   0.0,
+    "portion_g": 100
+  }
+}

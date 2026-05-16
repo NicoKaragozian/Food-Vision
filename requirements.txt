@@ -39,3 +39,7 @@ ultralytics>=8.0.0
 
 # Evaluación de detección/segmentación — FoodSeg103 vía HuggingFace (notebooks 07+)
 datasets>=2.16.0
+
+# Pipeline FoodSeg103 (notebooks 08+) — SAM (segmentación class-agnostic) + CLIP (clasificación zero-shot)
+segment-anything>=1.0
+open_clip_torch>=2.20.0
