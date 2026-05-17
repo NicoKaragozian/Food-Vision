@@ -13,9 +13,12 @@ WEIGHTS_DIR               = ROOT_DIR / "weights"
 FOOD101_DIR               = DATA_DIR / "food-101"
 NUTRITION_PATH            = DATA_DIR / "nutrition_lookup.json"
 FOODSEG103_NUTRITION_PATH = DATA_DIR / "nutrition_foodseg103.json"
+FOODSEG103_CROPS_DIR      = DATA_DIR / "foodseg103_crops"
+FOODSEG103_WEIGHTS_PATH   = WEIGHTS_DIR / "foodseg103_effnet.pt"
 
 # ── Dataset ────────────────────────────────────────────────────────────────────
 NUM_CLASSES = 101
+FOODSEG103_NUM_CLASSES = 103
 
 # Clases de Food-101 en orden alfabético (mismo que torchvision.datasets.Food101)
 FOOD101_CLASSES = [

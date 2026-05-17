@@ -261,12 +261,15 @@ Grounding DINO + EfficientNet-B0 para clasificación fina puede ser el pipeline 
 
 El informe de 3 páginas debe reportar métricas comparativas que muestren la evolución del sistema. La tabla propuesta:
 
-| Versión del sistema | Top-1 | Precision | Recall | F1 | MAPE calórico |
-|---|---|---|---|---|---|
-| Entrega intermedia (baseline, imagen completa, porción fija) | 82.86% | — | — | — | 10.6% |
-| + Detección multi-ingrediente (YOLOv8 + EfficientNet) | — | mAP@50 | Recall@50 | F1@50 | TBD |
-| + Segmentación (SAM) + porción por área | — | mAP@50 | Recall@50 | F1@50 | TBD |
-| + Backbone transformer (CLIP/ViT) | TBD | TBD | TBD | TBD | TBD |
+| Versión del sistema | Notebook | Detección | Clasificación | MAPE |
+|---|---|---|---|---|
+| Baseline Food-101 (imagen completa, porción fija) | nb02/05 | — | Top-1 82.86% / Top-5 95.83% | 10.6% |
+| Cascada YOLO + EffNet (suma ingenua) | nb06 | — | EffNet-B0 (Food-101) | ~238% |
+| Cascada corregida (NMS + filtro vajilla + reparto por área) | nb07 | AP@50 = 0.116 | EffNet-B0 (Food-101) | ~32% (Food-101) |
+| FoodSeg103 v1 (SAM con prompts YOLO + CLIP zero-shot single) | nb08 | mIoU ~0.26 | CLIP top-1 ~36% | ~74% media / 51% mediana |
+| FoodSeg103 v2 (SAM auto-mask + CLIP ensemble + filtro conf) | nb09 | mIoU mejora vs v1 | CLIP top-1 ~40% | TBD (ver nb09) |
+| Router unificado v2 | nb10 | — | switch Food-101 / v2 | según rama |
+| **FoodSeg103 v3 (SAM auto + EffNet fine-tuned + filtros)** | **nb11** | + NMS + reject plato | **EffNet top-1 ≥0.55 esperado** | **mejora sustancial esperada vs v2** |
 
 Los "TBD" se completan a medida que se implementa cada paso. La narrativa es siempre: "cada mejora técnica se refleja en una o más métricas". Si el MAPE calórico baja de 10.6% a X%, es porque la estimación de porciones mejoró. Si el mAP@50 es alto pero el MAPE no mejora, significa que detectamos bien pero las porciones siguen siendo el problema.
 

@@ -2,6 +2,9 @@
 data/food-101/
 data/food-101.tar.gz
 
+# Crops derivados de FoodSeg103 (se regeneran con nb11 Parte 1)
+data/foodseg103_crops/
+
 # Checkpoints entrenados — cientos de MB
 weights/*.pt
 weights/*.pth

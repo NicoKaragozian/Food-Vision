@@ -55,19 +55,30 @@ src/
                     GradCAM, overlay_gradcam()
 
 notebooks/
-  01_EDA.ipynb         ← exploración Food-101 + preview nutrición
-  02_baseline.ipynb    ← head-only training → weights/baseline.pt
-  03_finetuning.ipynb  ← fine-tuning diferencial → weights/model_v1.pt
-  04_embeddings.ipynb  ← t-SNE + KNN retrieval
-  05_evaluation.ipynb  ← métricas finales, Grad-CAM, demo pipeline
+  01_EDA.ipynb                       ← exploración Food-101 + preview nutrición
+  02_baseline.ipynb                  ← head-only training → weights/baseline.pt
+  03_finetuning.ipynb                ← fine-tuning diferencial → weights/model_v1.pt
+  04_embeddings.ipynb                ← t-SNE + KNN retrieval
+  05_evaluation.ipynb                ← métricas finales, Grad-CAM, demo pipeline
+  06_detection_pipeline.ipynb        ← cascada YOLOv8 + EffNet (versión ingenua)
+  07_detection_eval.ipynb            ← cascada corregida + mAP sobre FoodSeg103
+  08_foodseg103_pipeline.ipynb       ← v1: SAM con prompts YOLO + CLIP zero-shot
+  09_foodseg103_automask.ipynb       ← v2: SAM auto-mask + CLIP ensemble + filtro
+  10_unified_demo.ipynb              ← router Food-101 ↔ FoodSeg103-v2
+  11_foodseg103_classifier.ipynb     ← v3: EffNet fine-tuned (reemplaza CLIP) +
+                                       SAM auto con filtros (rechazo plato/NMS/merge)
 
 data/
-  nutrition_lookup.json  ← 101 categorías con kcal/macros por 100g (USDA FoodData Central)
-  food-101/              ← NO commitear (5 GB, se descarga con torchvision)
+  nutrition_lookup.json          ← 101 categorías Food-101 con kcal/macros por 100g (USDA)
+  nutrition_foodseg103.json      ← 103 ingredientes FoodSeg103 con kcal/macros
+  food-101/                      ← NO commitear (5 GB, torchvision)
+  foodseg103_crops/              ← NO commitear (~25-35k crops generados por nb11)
 
 weights/
-  baseline.pt   ← se genera al correr notebook 02
-  model_v1.pt   ← se genera al correr notebook 03  [NO commitear]
+  baseline.pt              ← se genera al correr notebook 02
+  model_v1.pt              ← se genera al correr notebook 03  [NO commitear]
+  sam_vit_b_01ec64.pth     ← checkpoint SAM, descargar one-time
+  foodseg103_effnet.pt     ← se genera al correr notebook 11  [NO commitear]
 ```
 
 ## Orden de ejecución de notebooks
@@ -75,8 +86,15 @@ weights/
 ```
 01_EDA → 02_baseline → 03_finetuning → 04_embeddings
                                      ↘ 05_evaluation
+                                     ↘ 06_detection_pipeline → 07_detection_eval
+                                     ↘ 08_foodseg103_pipeline → 09_foodseg103_automask
+                                                              → 10_unified_demo
+                                                              → 11_foodseg103_classifier
 ```
-Los notebooks 04 y 05 requieren `model_v1.pt`.
+- Los notebooks 04-07, 10, 11 requieren `model_v1.pt` (nb03).
+- Los notebooks 08-11 requieren `weights/sam_vit_b_01ec64.pth` y `nutrition_foodseg103.json`.
+- El notebook 11 entrena y genera `weights/foodseg103_effnet.pt`. **Es el único que hay
+  que volver a correr** para reproducir el pipeline v3.
 
 ## Uso del pipeline desde Python
 
